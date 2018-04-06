@@ -3,7 +3,7 @@ from keras.models import Sequential
 from keras.layers import Dense,Dropout,Activation,Flatten
 from keras.layers import Conv2D,MaxPooling2D
 from keras.callbacks import EarlyStopping,ModelCheckpoint
-from keras.optimizers import SGD,Adam,rmsprop
+from keras.optimizers import SGD,rmsprop,Adam
 from keras import applications
 from keras import Model
 
@@ -12,7 +12,8 @@ import GLOBAL_PARAMS
 global_params = GLOBAL_PARAMS.getGlobalParams()
 
 def getPreTrained(unfreeze_all=False):
-	model = applications.Xception(weights = "imagenet", include_top=False, input_shape = (img_width, img_height, 3))
+	img_width,img_height = global_params['img_width'],global_params['img_height']
+	model = applications.ResNet50(weights = "imagenet", include_top=False, input_shape = (img_width, img_height, 3))
 	if unfreeze_all:
 		for layer in model.layers:
 			layer.trainable = True
@@ -30,7 +31,7 @@ def addBottom(base_model):
 	return predictions
 
 def getModel():
-	base_model = getPreTrained()
+	base_model = getPreTrained(unfreeze_all=True)
 	predictions = addBottom(base_model)
 	model = Model(input=base_model.input,output=predictions)
 	return model
@@ -46,7 +47,6 @@ def getCallbacks():
 	early_stopping = EarlyStopping(monitor='val_loss', min_delta=0.00001, patience=5, verbose=1, mode='auto')
 	checkpointer = ModelCheckpoint(filepath='models/'+model_prefix+'_best.h5', verbose=1, save_best_only=True)
 	return [early_stopping,checkpointer]
-
 
 train_generator = img_generators.getTrainGenerator(global_params['train_folder'])
 validation_generator = img_generators.getValidationGenerator(global_params['validation_folder'])

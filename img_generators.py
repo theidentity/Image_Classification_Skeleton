@@ -1,5 +1,10 @@
 from keras.preprocessing.image import ImageDataGenerator
+from GLOBAL_PARAMS import getGlobalParams
 
+
+global_params = getGlobalParams()
+img_width,img_height = global_params['img_width'],global_params['img_height']
+batch_size = global_params['batch_size']
 
 def getTrainGenerator(folder_path):
 
